@@ -1,37 +1,75 @@
 {
-  "name": "weather",
-  "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+  "_args": [
+    [
+      "lru-cache@4.1.5",
+      "/Users/kshitijagarwal/Desktop/weather copy"
+    ]
+  ],
+  "_development": true,
+  "_from": "lru-cache@4.1.5",
+  "_id": "lru-cache@4.1.5",
+  "_inBundle": false,
+  "_integrity": "sha512-sWZlbEP2OsHNkXrMl5GYk/jKk70MBng6UU4YI/qGDYbgf6YbP4EvmqISbXCoJiRKs+1bSpFHVgQxvJ17F2li5g==",
+  "_location": "/yorkie/lru-cache",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "version",
+    "registry": true,
+    "raw": "lru-cache@4.1.5",
+    "name": "lru-cache",
+    "escapedName": "lru-cache",
+    "rawSpec": "4.1.5",
+    "saveSpec": null,
+    "fetchSpec": "4.1.5"
+  },
+  "_requiredBy": [
+    "/yorkie/cross-spawn"
+  ],
+  "_resolved": "https://registry.npmmirror.com/lru-cache/-/lru-cache-4.1.5.tgz",
+  "_spec": "4.1.5",
+  "_where": "/Users/kshitijagarwal/Desktop/weather copy",
+  "author": {
+    "name": "Isaac Z. Schlueter",
+    "email": "i@izs.me"
+  },
+  "bugs": {
+    "url": "https://github.com/isaacs/node-lru-cache/issues"
   },
   "dependencies": {
-    "@fortawesome/fontawesome-svg-core": "^6.3.0",
-    "@fortawesome/free-brands-svg-icons": "^6.3.0",
-    "@fortawesome/free-regular-svg-icons": "^6.3.0",
-    "@fortawesome/free-solid-svg-icons": "^6.3.0",
-    "@fortawesome/vue-fontawesome": "^2.0.10",
-    "axios": "^1.3.2",
-    "core-js": "^3.8.3",
-    "vue": "^2.6.14",
-    "vue-router": "^3.5.1",
-    "vuex": "^3.6.2"
+    "pseudomap": "^1.0.2",
+    "yallist": "^2.1.2"
   },
+  "description": "A cache object that deletes the least-recently-used items.",
   "devDependencies": {
-    "@babel/core": "^7.12.16",
-    "@babel/eslint-parser": "^7.12.16",
-    "@vue/cli-plugin-babel": "~5.0.0",
-    "@vue/cli-plugin-eslint": "~5.0.0",
-    "@vue/cli-plugin-router": "~5.0.0",
-    "@vue/cli-plugin-vuex": "~5.0.0",
-    "@vue/cli-service": "~5.0.0",
-    "eslint": "^7.32.0",
-    "eslint-config-prettier": "^8.3.0",
-    "eslint-plugin-prettier": "^4.0.0",
-    "eslint-plugin-vue": "^8.0.3",
-    "prettier": "^2.4.1",
-    "vue-template-compiler": "^2.6.14"
-  }
+    "benchmark": "^2.1.4",
+    "standard": "^12.0.1",
+    "tap": "^12.1.0"
+  },
+  "files": [
+    "index.js"
+  ],
+  "homepage": "https://github.com/isaacs/node-lru-cache#readme",
+  "keywords": [
+    "mru",
+    "lru",
+    "cache"
+  ],
+  "license": "ISC",
+  "main": "index.js",
+  "name": "lru-cache",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/isaacs/node-lru-cache.git"
+  },
+  "scripts": {
+    "coveragerport": "tap --coverage-report=html",
+    "lintfix": "standard --fix test/*.js index.js",
+    "postpublish": "git push origin --all; git push origin --tags",
+    "posttest": "standard test/*.js index.js",
+    "postversion": "npm publish --tag=legacy",
+    "preversion": "npm test",
+    "snap": "TAP_SNAPSHOT=1 tap test/*.js -J",
+    "test": "tap test/*.js --100 -J"
+  },
+  "version": "4.1.5"
 }
