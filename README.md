@@ -1,158 +1,202 @@
-# lru cache
+<p align="center">
+  <img width="250" src="https://raw.githubusercontent.com/yargs/yargs/master/yargs-logo.png">
+</p>
+<h1 align="center"> Yargs </h1>
+<p align="center">
+  <b >Yargs be a node.js library fer hearties tryin' ter parse optstrings</b>
+</p>
 
-A cache object that deletes the least-recently-used items.
+<br>
 
-[![Build Status](https://travis-ci.org/isaacs/node-lru-cache.svg?branch=master)](https://travis-ci.org/isaacs/node-lru-cache) [![Coverage Status](https://coveralls.io/repos/isaacs/node-lru-cache/badge.svg?service=github)](https://coveralls.io/github/isaacs/node-lru-cache)
+![ci](https://github.com/yargs/yargs/workflows/ci/badge.svg)
+[![NPM version][npm-image]][npm-url]
+[![js-standard-style][standard-image]][standard-url]
+[![Coverage][coverage-image]][coverage-url]
+[![Conventional Commits][conventional-commits-image]][conventional-commits-url]
+[![Slack][slack-image]][slack-url]
 
-## Installation:
+## Description
+Yargs helps you build interactive command line tools, by parsing arguments and generating an elegant user interface.
 
-```javascript
-npm install lru-cache --save
+It gives you:
+
+* commands and (grouped) options (`my-program.js serve --port=5000`).
+* a dynamically generated help menu based on your arguments:
+
+```
+mocha [spec..]
+
+Run tests with Mocha
+
+Commands
+  mocha inspect [spec..]  Run tests with Mocha                         [default]
+  mocha init <path>       create a client-side Mocha setup at <path>
+
+Rules & Behavior
+  --allow-uncaught           Allow uncaught errors to propagate        [boolean]
+  --async-only, -A           Require all tests to use a callback (async) or
+                             return a Promise                          [boolean]
 ```
 
-## Usage:
+* bash-completion shortcuts for commands and options.
+* and [tons more](/docs/api.md).
 
-```javascript
-var LRU = require("lru-cache")
-  , options = { max: 500
-              , length: function (n, key) { return n * 2 + key.length }
-              , dispose: function (key, n) { n.close() }
-              , maxAge: 1000 * 60 * 60 }
-  , cache = LRU(options)
-  , otherCache = LRU(50) // sets just the max size
+## Installation
 
-cache.set("key", "value")
-cache.get("key") // "value"
-
-// non-string keys ARE fully supported
-// but note that it must be THE SAME object, not
-// just a JSON-equivalent object.
-var someObject = { a: 1 }
-cache.set(someObject, 'a value')
-// Object keys are not toString()-ed
-cache.set('[object Object]', 'a different value')
-assert.equal(cache.get(someObject), 'a value')
-// A similar object with same keys/values won't work,
-// because it's a different object identity
-assert.equal(cache.get({ a: 1 }), undefined)
-
-cache.reset()    // empty the cache
+Stable version:
+```bash
+npm i yargs
 ```
 
-If you put more stuff in it, then items will fall out.
+Bleeding edge version with the most recent features:
+```bash
+npm i yargs@next
+```
 
-If you try to put an oversized thing in it, then it'll fall out right
-away.
+## Usage
 
-## Options
+### Simple Example
 
-* `max` The maximum size of the cache, checked by applying the length
-  function to all values in the cache.  Not setting this is kind of
-  silly, since that's the whole purpose of this lib, but it defaults
-  to `Infinity`.
-* `maxAge` Maximum age in ms.  Items are not pro-actively pruned out
-  as they age, but if you try to get an item that is too old, it'll
-  drop it and return undefined instead of giving it to you.
-* `length` Function that is used to calculate the length of stored
-  items.  If you're storing strings or buffers, then you probably want
-  to do something like `function(n, key){return n.length}`.  The default is
-  `function(){return 1}`, which is fine if you want to store `max`
-  like-sized things.  The item is passed as the first argument, and
-  the key is passed as the second argumnet.
-* `dispose` Function that is called on items when they are dropped
-  from the cache.  This can be handy if you want to close file
-  descriptors or do other cleanup tasks when items are no longer
-  accessible.  Called with `key, value`.  It's called *before*
-  actually removing the item from the internal cache, so if you want
-  to immediately put it back in, you'll have to do that in a
-  `nextTick` or `setTimeout` callback or it won't do anything.
-* `stale` By default, if you set a `maxAge`, it'll only actually pull
-  stale items out of the cache when you `get(key)`.  (That is, it's
-  not pre-emptively doing a `setTimeout` or anything.)  If you set
-  `stale:true`, it'll return the stale value before deleting it.  If
-  you don't set this, then it'll return `undefined` when you try to
-  get a stale entry, as if it had already been deleted.
-* `noDisposeOnSet` By default, if you set a `dispose()` method, then
-  it'll be called whenever a `set()` operation overwrites an existing
-  key.  If you set this option, `dispose()` will only be called when a
-  key falls out of the cache, not when it is overwritten.
+```javascript
+#!/usr/bin/env node
+const yargs = require('yargs/yargs')
+const { hideBin } = require('yargs/helpers')
+const argv = yargs(hideBin(process.argv)).argv
 
-## API
+if (argv.ships > 3 && argv.distance < 53.5) {
+  console.log('Plunder more riffiwobbles!')
+} else {
+  console.log('Retreat from the xupptumblers!')
+}
+```
 
-* `set(key, value, maxAge)`
-* `get(key) => value`
+```bash
+$ ./plunder.js --ships=4 --distance=22
+Plunder more riffiwobbles!
 
-    Both of these will update the "recently used"-ness of the key.
-    They do what you think. `maxAge` is optional and overrides the
-    cache `maxAge` option if provided.
+$ ./plunder.js --ships 12 --distance 98.7
+Retreat from the xupptumblers!
+```
 
-    If the key is not found, `get()` will return `undefined`.
+### Complex Example
 
-    The key and val can be any value.
+```javascript
+#!/usr/bin/env node
+const yargs = require('yargs/yargs')
+const { hideBin } = require('yargs/helpers')
 
-* `peek(key)`
+yargs(hideBin(process.argv))
+  .command('serve [port]', 'start the server', (yargs) => {
+    yargs
+      .positional('port', {
+        describe: 'port to bind on',
+        default: 5000
+      })
+  }, (argv) => {
+    if (argv.verbose) console.info(`start server on :${argv.port}`)
+    serve(argv.port)
+  })
+  .option('verbose', {
+    alias: 'v',
+    type: 'boolean',
+    description: 'Run with verbose logging'
+  })
+  .argv
+```
 
-    Returns the key value (or `undefined` if not found) without
-    updating the "recently used"-ness of the key.
+Run the example above with `--help` to see the help for the application.
 
-    (If you find yourself using this a lot, you *might* be using the
-    wrong sort of data structure, but there are some use cases where
-    it's handy.)
+## Supported Platforms
 
-* `del(key)`
+### TypeScript
 
-    Deletes a key out of the cache.
+yargs has type definitions at [@types/yargs][type-definitions].
 
-* `reset()`
+```
+npm i @types/yargs --save-dev
+```
 
-    Clear the cache entirely, throwing away all values.
+See usage examples in [docs](/docs/typescript.md).
 
-* `has(key)`
+### Deno
 
-    Check if a key is in the cache, without updating the recent-ness
-    or deleting it for being stale.
+As of `v16`, `yargs` supports [Deno](https://github.com/denoland/deno):
 
-* `forEach(function(value,key,cache), [thisp])`
+```typescript
+import yargs from 'https://deno.land/x/yargs/deno.ts'
+import { Arguments } from 'https://deno.land/x/yargs/deno-types.ts'
 
-    Just like `Array.prototype.forEach`.  Iterates over all the keys
-    in the cache, in order of recent-ness.  (Ie, more recently used
-    items are iterated over first.)
+yargs(Deno.args)
+  .command('download <files...>', 'download a list of files', (yargs: any) => {
+    return yargs.positional('files', {
+      describe: 'a list of files to do something with'
+    })
+  }, (argv: Arguments) => {
+    console.info(argv)
+  })
+  .strictCommands()
+  .demandCommand(1)
+  .argv
+```
 
-* `rforEach(function(value,key,cache), [thisp])`
+### ESM
 
-    The same as `cache.forEach(...)` but items are iterated over in
-    reverse order.  (ie, less recently used items are iterated over
-    first.)
+As of `v16`,`yargs` supports ESM imports:
 
-* `keys()`
+```js
+import yargs from 'yargs'
+import { hideBin } from 'yargs/helpers'
 
-    Return an array of the keys in the cache.
+yargs(hideBin(process.argv))
+  .command('curl <url>', 'fetch the contents of the URL', () => {}, (argv) => {
+    console.info(argv)
+  })
+  .demandCommand(1)
+  .argv
+```
 
-* `values()`
+### Usage in Browser
 
-    Return an array of the values in the cache.
+See examples of using yargs in the browser in [docs](/docs/browser.md).
 
-* `length`
+## Community
 
-    Return total length of objects in cache taking into account
-    `length` options function.
+Having problems? want to contribute? join our [community slack](http://devtoolscommunity.herokuapp.com).
 
-* `itemCount`
+## Documentation
 
-    Return total quantity of objects currently in cache. Note, that
-    `stale` (see options) items are returned as part of this item
-    count.
+### Table of Contents
 
-* `dump()`
+* [Yargs' API](/docs/api.md)
+* [Examples](/docs/examples.md)
+* [Parsing Tricks](/docs/tricks.md)
+  * [Stop the Parser](/docs/tricks.md#stop)
+  * [Negating Boolean Arguments](/docs/tricks.md#negate)
+  * [Numbers](/docs/tricks.md#numbers)
+  * [Arrays](/docs/tricks.md#arrays)
+  * [Objects](/docs/tricks.md#objects)
+  * [Quotes](/docs/tricks.md#quotes)
+* [Advanced Topics](/docs/advanced.md)
+  * [Composing Your App Using Commands](/docs/advanced.md#commands)
+  * [Building Configurable CLI Apps](/docs/advanced.md#configuration)
+  * [Customizing Yargs' Parser](/docs/advanced.md#customizing)
+  * [Bundling yargs](/docs/bundling.md)
+* [Contributing](/contributing.md)
 
-    Return an array of the cache entries ready for serialization and usage
-    with 'destinationCache.load(arr)`.
+## Supported Node.js Versions
 
-* `load(cacheEntriesArray)`
+Libraries in this ecosystem make a best effort to track
+[Node.js' release schedule](https://nodejs.org/en/about/releases/). Here's [a
+post on why we think this is important](https://medium.com/the-node-js-collection/maintainers-should-consider-following-node-js-release-schedule-ab08ed4de71a).
 
-    Loads another cache entries array, obtained with `sourceCache.dump()`,
-    into the cache. The destination cache is reset before loading new entries
-
-* `prune()`
-
-    Manually iterates over the entire cache proactively pruning old entries
+[npm-url]: https://www.npmjs.com/package/yargs
+[npm-image]: https://img.shields.io/npm/v/yargs.svg
+[standard-image]: https://img.shields.io/badge/code%20style-standard-brightgreen.svg
+[standard-url]: http://standardjs.com/
+[conventional-commits-image]: https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg
+[conventional-commits-url]: https://conventionalcommits.org/
+[slack-image]: http://devtoolscommunity.herokuapp.com/badge.svg
+[slack-url]: http://devtoolscommunity.herokuapp.com
+[type-definitions]: https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/yargs
+[coverage-image]: https://img.shields.io/nycrc/yargs/yargs
+[coverage-url]: https://github.com/yargs/yargs/blob/master/.nycrc
